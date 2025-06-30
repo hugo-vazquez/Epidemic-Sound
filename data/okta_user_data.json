@@ -1,0 +1,19 @@
+{
+"profile": {
+"login": "jane.doe@example.com",
+"firstName": "Jane",
+"lastName": "Doe",
+"email": "jane.doe@example.com",
+"employeeNumber": "12345"
+},
+"groups": [
+"Everyone",
+"Engineering",
+"Full-Time Employees"
+],
+"applications": [
+"Google Workspace",
+"Slack",
+"Jira"
+]
+}
