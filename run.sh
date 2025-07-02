@@ -1,6 +1,8 @@
 #!/bin/bash
 
 VENV_DIR="venv"
+export OKTA_DOMAIN="https://dev-04279224-admin.okta.com"
+export OKTA_API_TOKEN="00ta_mfskUB028k6X7EqBrDKWbqboefIFmTlSSUpXw"
 
 # Create virtual environment if it doesn't exist
 if [ ! -d "$VENV_DIR" ]; then
