@@ -17,8 +17,8 @@ app = FastAPI()
 enriched_users = {}
 
 # Okta configuration
-OKTA_DOMAIN = os.getenv("OKTA_DOMAIN", "https://dev-04279224-admin.okta.com")
-OKTA_TOKEN = os.getenv("OKTA_API_TOKEN", "00ta_mfskUB028k6X7EqBrDKWbqboefIFmTlSSUpXw")
+OKTA_DOMAIN = os.getenv("OKTA_DOMAIN")
+OKTA_TOKEN = os.getenv("OKTA_API_TOKEN")
 
 # ------------------- Models -------------------
 class HRUser(BaseModel):
