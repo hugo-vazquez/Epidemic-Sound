@@ -1,12 +1,13 @@
 #!/usr/bin/python3
+# pylint: disable=too-few-public-methods disable=import-error
 
 """FastAPI application for onboarding and enriching user data from HR and Okta sources."""
 from typing import List, Optional
 import os
 import logging
-import requests  # type: ignore
-from fastapi import FastAPI, HTTPException  # type: ignore
-from pydantic import BaseModel  # type: ignore
+import requests
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -22,6 +23,10 @@ OKTA_TOKEN = os.getenv("OKTA_API_TOKEN")
 
 # ------------------- Models -------------------
 class HRUser(BaseModel):
+    """Represents a user record from the HR system.
+    This is a data model for HR user information. It is used for data validation and serialization.
+    The class intentionally contains no public methods, as it is a Pydantic model.
+    """
     employee_id: str
     first_name: str
     last_name: str
@@ -46,11 +51,13 @@ class HRUser(BaseModel):
     division: str
 
 class OktaUser(BaseModel):
+    """Represents a user record from Okta, including profile, groups, and applications."""
     profile: dict
     groups: List[str]
     applications: List[str]
 
 class EnrichedUser(BaseModel):
+    """Model representing the enriched user data combining HR and Okta information."""
     id: str
     name: str
     email: str
@@ -137,4 +144,3 @@ def get_user(user_id: str):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
-
