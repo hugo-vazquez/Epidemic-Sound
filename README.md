@@ -56,7 +56,7 @@ curl -X POST http://localhost:8000/hr_user \
 
 ## Get user after enrichment
 ```
-curl http://localhost:8000/user/12345
+curl -s http://localhost:8000/user/12345 | python3 -m json.tool
 ```
 
 ## NOTE: 
