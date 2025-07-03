@@ -1,21 +1,30 @@
 # Installation & Usage
 
 ## Clone and Navigate
+```
 git clone https://github.com/hugo-vazquez/Epidemic-Sound.git
 cd Epidemic-Sound
+```
 
 ## Set environmental variables
+```
 export OKTA_DOMAIN="https://dev-04279224-admin.okta.com"
 export OKTA_API_TOKEN="00ta_mfskUB028k6X7EqBrDKWbqboefIFmTlSSUpXw"
+```
 
 ## Start application
+```
 ./run.sh
+```
 
 ## User data from OKTA
+```
 curl -X GET "${OKTA_DOMAIN}/api/v1/users?search=profile.employeeNumber+eq+%2212345%22" -H "Authorization: SSWS ${OKTA_API_TOKEN}
 " -H "Accept: application/json"
+```
 
 ## Onboard a User 
+```
 curl -X POST http://localhost:8000/hr_user \
   -H "Content-Type: application/json" \
   -d '{
@@ -42,12 +51,15 @@ curl -X POST http://localhost:8000/hr_user \
     "legal_entity": "Epidemic Sound AB",
     "division": "Product & Engineering"
   }'
+```
 
 ## Get user after enrichment
+```
 curl http://localhost:8000/user/12345
+```
 
-
-## NOTE: Enriched user is stored in local memmory. All data is lost when the app restarts
+## NOTE: 
+Enriched user is stored in local memmory. All data is lost when the app restarts
 
 ## Tech choices - Python, FastAPI, Pydantic, Okta
 The application is built in FastAPI which is a Python based. Python makes it easy to handle JSON, error handling, REST APIs, it's easy to read and write and has a large community and a bast library of packages available.
