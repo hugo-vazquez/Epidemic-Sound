@@ -4,12 +4,12 @@
 from typing import List, Optional
 import os
 import logging
-import requests # type: ignore
-from fastapi import FastAPI, HTTPException # type: ignore
-from pydantic import BaseModel # type: ignore
+import requests  # type: ignore
+from fastapi import FastAPI, HTTPException  # type: ignore
+from pydantic import BaseModel  # type: ignore
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 app = FastAPI()
 
@@ -22,10 +22,6 @@ OKTA_TOKEN = os.getenv("OKTA_API_TOKEN")
 
 # ------------------- Models -------------------
 class HRUser(BaseModel):
-    """Represents a user record from the HR system.
-    This is a data model for HR user information. It is used for data validation and serialization.
-    The class intentionally contains no public methods, as it is a Pydantic model.
-    """
     employee_id: str
     first_name: str
     last_name: str
@@ -50,13 +46,11 @@ class HRUser(BaseModel):
     division: str
 
 class OktaUser(BaseModel):
-    """Represents a user record from Okta, including profile, groups, and applications."""
     profile: dict
     groups: List[str]
     applications: List[str]
 
 class EnrichedUser(BaseModel):
-    """Represents an enriched user record combining HR and Okta data."""
     id: str
     name: str
     email: str
@@ -68,62 +62,47 @@ class EnrichedUser(BaseModel):
     onboarded: bool
 
 # ------------------- Helper Functions -------------------
-def load_okta_data(email: str) -> Optional[OktaUser]:
-    """Load Okta user data using the Okta API based on the provided email.
-
-    Args:
-        email (str): The email address to search for in the Okta user data.
-
-    Returns:
-        Optional[OktaUser]: An OktaUser object if found, otherwise None.
-    """
+def load_okta_data(employee_id: str) -> Optional[OktaUser]:
+    """Fetch Okta user data using employee ID."""
     headers = {
         "Authorization": f"SSWS {OKTA_TOKEN}",
         "Accept": "application/json"
     }
     try:
-        # Search users by email
-        resp = requests.get(
-            f"{OKTA_DOMAIN}/api/v1/users?q={email}",
-            headers=headers,
-            timeout=10
-        )
+        search_url = f'{OKTA_DOMAIN}/api/v1/users?search=profile.employeeNumber+eq+"{employee_id}"'
+        logging.debug("Searching Okta with employee ID: %s", employee_id)
+        logging.debug("Request URL: %s", search_url)
+
+        resp = requests.get(search_url, headers=headers, timeout=10)
+        logging.debug("Raw Okta response: %s", resp.text)
         resp.raise_for_status()
         users = resp.json()
+
         if not users:
-            logging.warning("No Okta user found for email: %s", email)
+            logging.warning("No Okta user found for employee_id: %s", employee_id)
             return None
 
         user = users[0]
         user_id = user.get("id")
 
-        # Fetch user groups
-        groups_resp = requests.get(
-            f"{OKTA_DOMAIN}/api/v1/users/{user_id}/groups",
-            headers=headers,
-            timeout=10
-        )
+        # Fetch groups
+        groups_url = f"{OKTA_DOMAIN}/api/v1/users/{user_id}/groups"
+        logging.debug("Fetching user groups: %s", groups_url)
+        groups_resp = requests.get(groups_url, headers=headers, timeout=10)
         groups_resp.raise_for_status()
         groups = [g["profile"]["name"] for g in groups_resp.json()]
 
-        # For simplicity, simulate application list
+        # Simulated applications
         applications = ["Google Workspace", "Slack", "Jira"]
 
         return OktaUser(profile=user["profile"], groups=groups, applications=applications)
+
     except requests.RequestException as e:
         logging.error("Failed to fetch Okta user data: %s", e)
         return None
 
 def merge_user_data(hr: HRUser, okta: OktaUser) -> EnrichedUser:
-    """Merge HR user data with Okta user data to create an enriched user record.
-
-    Args:
-        hr (HRUser): The HR user data.
-        okta (OktaUser): The Okta user data.
-
-    Returns:
-        EnrichedUser: The enriched user record combining HR and Okta data.
-    """
+    """Merge HR and Okta data into a unified EnrichedUser model."""
     name = f"{hr.first_name} {hr.last_name}"
     return EnrichedUser(
         id=hr.employee_id,
@@ -140,19 +119,9 @@ def merge_user_data(hr: HRUser, okta: OktaUser) -> EnrichedUser:
 # ------------------- API Routes -------------------
 @app.post("/hr_user")
 def post_hr_user(hr_user: HRUser):
-    """Endpoint to onboard and enrich a user.
-
-    Accepts HR user data, loads corresponding Okta data, merges them, and stores the enriched user.
-    Raises HTTP 404 if Okta data is not found.
-
-    Args:
-        hr_user (HRUser): The HR user data from the request body.
-
-    Returns:
-        dict: Success message if onboarding is successful.
-    """
+    """Onboard and enrich a user using HR + Okta data."""
     logging.info("Received HR data for %s", hr_user.email)
-    okta_data = load_okta_data(hr_user.email)
+    okta_data = load_okta_data(hr_user.employee_id)
     if not okta_data:
         raise HTTPException(status_code=404, detail="Okta data not found")
 
@@ -163,18 +132,9 @@ def post_hr_user(hr_user: HRUser):
 
 @app.get("/user/{user_id}", response_model=EnrichedUser)
 def get_user(user_id: str):
-    """Endpoint to retrieve enriched user data by user ID.
-
-    Args:
-        user_id (str): The employee ID of the user.
-
-    Returns:
-        EnrichedUser: The enriched user data if found.
-
-    Raises:
-        HTTPException: If the user is not found.
-    """
+    """Retrieve enriched user by employee ID."""
     user = enriched_users.get(user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
