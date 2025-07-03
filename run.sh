@@ -1,8 +1,9 @@
 #!/bin/bash
 
+# Set environmental variables
 VENV_DIR="venv"
-export OKTA_DOMAIN="https://dev-04279224-admin.okta.com"
-export OKTA_API_TOKEN="00ta_mfskUB028k6X7EqBrDKWbqboefIFmTlSSUpXw"
+OKTA_DOMAIN="https://dev-04279224-admin.okta.com"
+OKTA_API_TOKEN="00ta_mfskUB028k6X7EqBrDKWbqboefIFmTlSSUpXw"
 
 # Create virtual environment if it doesn't exist
 if [ ! -d "$VENV_DIR" ]; then
@@ -14,12 +15,17 @@ fi
 echo "Activating virtual environment..."
 source $VENV_DIR/bin/activate
 
-# Install dependencies
-echo "Installing dependencies..."
-pip install --upgrade pip
-pip install -r requirements.txt
+# Install dependencies only if not already satisfied
+echo "Checking dependencies..."
+pip install --upgrade pip > /dev/null
+
+if ! pip check > /dev/null 2>&1; then
+  echo "Installing missing dependencies..."
+  pip install -r requirements.txt
+else
+  echo "All requirements already satisfied."
+fi
 
 # Start the FastAPI app
 echo "Starting FastAPI app with Uvicorn..."
 uvicorn main:app --reload
-
