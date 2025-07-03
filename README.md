@@ -1,9 +1,10 @@
 # Installation & Usage
 
-## Clone and Navigate
+## Clone and fix permissions
 ```
 git clone https://github.com/hugo-vazquez/Epidemic-Sound.git
 cd Epidemic-Sound
+chmod +x run.sh
 ```
 
 ## Set environmental variables
