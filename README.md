@@ -68,5 +68,7 @@ FastAPI it's a framework with a short learning curve, easy to maintain and exten
 Pydantic is a python library for data validation, it's used to validate the data received from the user and ensure it meets the expected format before processing, which helps to prevent errors and ensure data integrity.
 
 ## Trade off or Challenges
+If innstructions are not followed accordingly the app won't work. Error handling is not always precise. 
+
 ## Anything you'd improve with more time
-Persistent storage, potentially containerization of the application.
+Authentication, secrets manager, persistent storage, containerization of the application.
